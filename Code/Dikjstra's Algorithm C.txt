@@ -1,0 +1,107 @@
+#include <stdio.h>
+#include <string.h>
+
+#define INFINITY 9999
+#define N 6
+
+// Function prototype for Dijkstra's algorithm
+int dijkstra(int cost[][N], int source, int target);
+
+int main() {
+    int cost[N][N], i, j, w, co;
+    int source, target, x, y;
+
+    // Print a header for the program
+    printf("\tThe Shortest Path Algorithm (DIJKSTRA'S ALGORITHM in C)\n\n");
+
+    // Initialize the cost matrix
+    for (i = 0; i < N; i++) {
+        for (j = 0; j < N; j++) {
+            cost[i][j] = (i == j) ? 0 : INFINITY;
+        }
+    }
+
+    // Get path weights from the user
+    for (x = 0; x < N; x++) {
+        for (y = x + 1; y < N; y++) {
+            printf("Enter the weight of the path between nodes %d and %d: ", x + 1, y + 1);
+            scanf("%d", &w);
+            cost[x][y] = cost[y][x] = w;
+        }
+        printf("\n");
+    }
+
+    // Get source and target nodes from the user
+    printf("Enter the source: ");
+    scanf("%d", &source);
+    printf("Enter the target: ");
+    scanf("%d", &target);
+
+    // Call Dijkstra's algorithm and store the result
+    co = dijkstra(cost, source, target);
+
+    // Print the shortest path distance
+    printf("The Shortest Path: %d\n", co);
+
+    return 0;
+}
+
+// Dijkstra's algorithm to find the shortest path
+int dijkstra(int cost[][N], int source, int target) {
+    int dist[N], prev[N], selected[N] = {0}, i, m, min, start, d, j;
+    char path[N];
+
+    // Initialize distance and previous node arrays
+    for (i = 0; i < N; i++) {
+        dist[i] = INFINITY;
+        prev[i] = -1;
+    }
+
+    // Set the source node as the current node
+    start = source - 1;
+    selected[start] = 1;
+    dist[start] = 0;
+
+    // Continue until the target node is selected
+    while (!selected[target - 1]) {
+        min = INFINITY;
+        m = 0;
+
+        // Update distances and previous nodes for neighboring nodes
+        for (i = 0; i < N; i++) {
+            d = dist[start] + cost[start][i];
+            if (d < dist[i] && !selected[i]) {
+                dist[i] = d;
+                prev[i] = start;
+            }
+            if (min > dist[i] && !selected[i]) {
+                min = dist[i];
+                m = i;
+            }
+        }
+
+        // Set the next node as the current node
+        start = m;
+        selected[start] = 1;
+    }
+
+    // Initialize variables for constructing the path
+    start = target - 1;
+    j = 0;
+
+    // Backtrack from the target to the source to construct the path
+    while (start != -1) {
+        path[j++] = start + 'A'; // Convert node index to character ('A', 'B', ...)
+        start = prev[start];
+    }
+
+    path[j] = '\0'; // Null-terminate the path
+
+    // Print the path in reverse order
+    for (i = j - 1; i >= 0; i--) {
+        printf("%c", path[i]);
+    }
+
+    // Return the shortest path distance
+    return dist[target - 1];
+}

@@ -1,0 +1,86 @@
+//SELECTIVE REPEAT simulation
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define WS 5		//window size
+#define N  21		//number of frames to be send, frames are 0,1,2...N-1
+
+/*
+DESCRIPTION: the function to simulate the action of receiver
+	*arguments: data and the proper acknowledgement for the data
+	*return either positive or negative acknowledgement
+	*negative acknowledgemnt to simulate data loss
+RETURN:
+	*correctAck, positive acknowledgement
+	*-1, negative acknowledgement
+*/
+
+int sendToReceiver(int data, int correctAck)
+{
+// 	printf("Reciever: received data: %d, ack: %d\n", data, correctAck);
+	if(rand()%3 == 0)
+	{
+		return -1;					//negative
+	}
+	else
+	{
+		return correctAck;			//positive
+	}
+}
+
+int main()
+{
+	//sender code
+	int window[WS];
+	int windowStart=1;
+
+	while(windowStart<=N)
+	{
+		printf("sender: window start at: %d\n", windowStart);
+
+		int i;
+		
+		//initialising the window
+		//window[i] correspond to data (windowStart+i)
+		//window[i]!=0, means corresponding frames not acknowledged
+		for(i=0; i<WS; ++i)		window[i]=windowStart+i;
+
+		do
+		{
+		    int ackn[WS];
+			for(i=0; i<WS && windowStart+i<=N; ++i)
+			{
+				if(window[i]!=0)
+				{
+					printf("Data Send: %d\n", windowStart+i);
+					int ack= sendToReceiver(windowStart+i, i);
+					ackn[i] = ack;
+				// 	printf("Sender: Acknowledgement Received: %d\n", ack+1);
+
+					if(ack!=-1)
+					{
+						window[ack]=0;
+					}
+				}
+			}
+			
+			for(i=0; i<WS; ++i){
+			    if(ackn[i] == -1){
+			        printf("Receiver: Not received %d\n", windowStart+i);
+			    }else{
+			        printf("Receiver: sending positive Acknowledgement %d\n", windowStart+i);
+			    }
+			}
+
+			/*trying to find the first unacknowledged frame*/
+			for(i=0; i<WS; ++i)
+				if(window[i]!=0)	break;
+		}while(i!=WS && windowStart+i!=N+1);
+
+		/*next window starts from the first unacknowledged frame*/
+		windowStart+=WS;
+	}
+
+	return 0;
+}
